@@ -35,7 +35,7 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-def run_chain(texts, chain, max_workers=2, batch_size=32):
+def run_chain(texts, chain, max_workers=2, batch_size=32, print_exceptions=False):
     result = []
     batch_size = 32
     max_workers = 2
@@ -45,6 +45,8 @@ def run_chain(texts, chain, max_workers=2, batch_size=32):
                 chain.batch(batch, config={"max_concurrency": max_workers})
             )
         except Exception as e:
+            if print_exceptions:
+                print(e)
             result.extend([ None ] * batch_size)
     return result
 
