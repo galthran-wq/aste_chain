@@ -2,6 +2,10 @@ import os
 from tqdm.auto import tqdm
 from pathlib import Path
 from langchain.chat_models.gigachat import GigaChat
+from langchain.vectorstores import SKLearnVectorStore
+
+from loaders import HuggingFaceDatasetLoader
+from embeddings import E5HuggingfaceEmbeddings
 
 
 def parse_env_file(env_file_path):
@@ -43,3 +47,14 @@ def run_chain(texts, chain, max_workers=2, batch_size=32):
         except Exception as e:
             result.extend([ None ] * batch_size)
     return result
+
+
+def get_retriever(dataset_path, k_examples=20):
+    loader = HuggingFaceDatasetLoader(dataset_path, "text")
+    data = loader.load()
+    emb = E5HuggingfaceEmbeddings(
+        model_name=os.path.expanduser("~") + "/models/multilingual-e5-small"
+    )
+    db = SKLearnVectorStore.from_documents(data, emb)
+    retriever = db.as_retriever(search_kwargs={"k": k_examples})
+    return retriever
