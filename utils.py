@@ -26,23 +26,29 @@ def setup_gigachat(env_file_path="./.env"):
     )
     return chat
 
-
-    from tqdm.auto import tqdm
-
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
 
-def run_chain(texts, chain, max_workers=2, batch_size=32, print_exceptions=False):
+def run_chain(
+    texts, 
+    chain, 
+    max_workers=2, 
+    batch_size=32, 
+    print_exceptions=False,
+    callbacks=None
+):
+    if callbacks is None:
+        callbacks = []
     result = []
     batch_size = 32
     max_workers = 2
     for batch in tqdm(chunks(texts, batch_size), total=len(texts) // batch_size):
         try:
             result.extend(
-                chain.batch(batch, config={"max_concurrency": max_workers})
+                chain.batch(batch, config={"max_concurrency": max_workers, "callbacks": callbacks}, verbose=True)
             )
         except Exception as e:
             if print_exceptions:
