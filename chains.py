@@ -8,7 +8,8 @@ from langchain.output_parsers.json import SimpleJsonOutputParser
 from prompts import (
     get_fewshot_gen_aspect_opinion_prompt, 
     get_fewshot_gen_aspect_prompt,
-    get_fewshot_gen_polarity_from_aspects_opinions_prompt
+    get_fewshot_gen_polarity_from_aspects_opinions_prompt,
+    get_fewshot_aop_prompt
 )
 from utils import setup_gigachat, get_retriever
 from parsers import AnyListOutputParser
@@ -66,13 +67,25 @@ def get_aste_ao_p_chain(examples: List):
         examples=examples
     )
     two_staged_chain = (
-        {"text": RunnablePassthrough()}
-        | ao_chain
+        {"text": RunnablePassthrough(), "duplets": ao_chain}
         | prompt
         | llm
         | AnyListOutputParser()
     )
     return two_staged_chain
+
+
+def get_aop_chain(examples: List):
+    prompt = get_fewshot_aop_prompt(
+        examples=examples
+    )
+    chain = (
+        {"text": RunnablePassthrough()}
+        | prompt
+        | llm
+        | AnyListOutputParser()
+    )
+    return chain
 
 
 def get_retrieve_ao_chain(dataset_path: str, k_examples=20):
