@@ -3,7 +3,7 @@
 import re
 import editdistance
 
-sentiment_word_list = ['positive', 'negative', 'neutral']
+sentiment_word_list = ['POS', 'NEG']
 aspect_cate_list = ['location general',
  'food prices',
  'food quality',

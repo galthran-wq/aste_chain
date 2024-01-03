@@ -294,29 +294,18 @@ class ABSADataset(Dataset):
             self.targets.append(tokenized_target)
 
 
-def write_results_to_log(log_file_path, best_test_result, args, dev_results, test_results, global_steps):
-    """
-    Record dev and test results to log file
-    """
+def write_results_to_log(log_file_path, results):
     local_time = time.asctime(time.localtime(time.time()))
-    exp_settings = "Exp setting: {0} on {1} under {2} | {3:.4f} | ".format(
-        args.task, args.dataset, args.paradigm, best_test_result
-    )
-    train_settings = "Train setting: bs={0}, lr={1}, num_epochs={2}".format(
-        args.train_batch_size, args.learning_rate, args.num_train_epochs
-    )
-    results_str = "\n* Results *:  Dev  /  Test  \n"
+    results_str = "\n* Results *: \n"
 
     metric_names = ['f1', 'precision', 'recall']
-    for gstep in global_steps:
-        results_str += f"Step-{gstep}:\n"
-        for name in metric_names:
-            name_step = f'{name}_{gstep}'
-            results_str += f"{name:<8}: {dev_results[name_step]:.4f} / {test_results[name_step]:.4f}"
-            results_str += ' '*5
-        results_str += '\n'
+    for name in metric_names:
+        name_step = f'{name}'
+        results_str += f"{name:<8}: {results[name_step]:.4f}"
+        results_str += ' '*5
+    results_str += '\n'
 
-    log_str = f"{local_time}\n{exp_settings}\n{train_settings}\n{results_str}\n\n"
+    log_str = f"{local_time}\n{results_str}\n\n"
 
     with open(log_file_path, "a+") as f:
         f.write(log_str)
