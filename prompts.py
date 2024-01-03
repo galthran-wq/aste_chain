@@ -71,7 +71,7 @@ def get_fewshot_gen_polarity_from_aspects_opinions_prompt(examples):
 - Термины аспектов и термины мнений должны содержаться в тексте отзыва.
 """
     example_prompt = ChatPromptTemplate.from_messages([
-        ("user", "Отзыв:\n{text}\nСписок терминов аспектов и терминов полярности:\n{ao_duplets}"),
+        ("user", "Отзыв:\n{text}\nСписок терминов аспектов и терминов полярности:\n{duplets}"),
         ("ai", "{triplets}"),
     ])
     few_shot_prompt = FewShotChatMessagePromptTemplate(
@@ -82,7 +82,36 @@ def get_fewshot_gen_polarity_from_aspects_opinions_prompt(examples):
         [
             ("system", system_prompt),
             few_shot_prompt,
-            ("user", "Отзыв:\n{text}\nСписок терминов аспектов и терминов полярности:\n{ao_duplets}")
+            ("user", "Отзыв:\n{text}\nСписок терминов аспектов и терминов полярности:\n{duplets}")
+        ]
+    )
+    return final_prompt
+
+
+def get_fewshot_aop_prompt(examples):
+    system_prompt = """
+Ты -- опытный работник банка. Твоя задача понимать, что людям нравится или не нравится в работе банка. Для этого ты занимаешься аспектно-ориентированным анализом настроения клиентов.
+Ты выделяешь из отзывов клиентов термины аспектов (aspect term), термины мнения (opinion term), и полярности.
+Термины аспектов (aspect terms) -- конкретного элемента или характеристика товара, продукта или сервиса, которую анализируют для определения настроения или отношения. Аспектами могут быть: качество, цена, удобство использования и т.д..
+Термины мнения (opinion terms) -- выражения, отражающие отношение клиента к аспекту.
+Полярность (sentiment polarity) -- примает одно значение из "POS" или "NEG".
+
+Условия:
+- Термины аспектов и термины мнений должны содержаться в тексте отзыва.
+"""
+    example_prompt = ChatPromptTemplate.from_messages([
+        ("user", "Отзыв:\n{text}\nСписок терминов аспектов, терминов полярности и полярностей из отзыва:"),
+        ("ai", "{triplets}"),
+    ])
+    few_shot_prompt = FewShotChatMessagePromptTemplate(
+        example_prompt=example_prompt,
+        examples=examples,
+    )
+    final_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", system_prompt),
+            few_shot_prompt,
+            ("user", "Отзыв:\n{text}\nСписок терминов аспектов, терминов полярности и полярностей из отзыва:")
         ]
     )
     return final_prompt
