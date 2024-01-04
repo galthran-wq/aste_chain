@@ -17,7 +17,7 @@ from example_selectors import ASTE_AO_RetrieverExampleSelector
 
 llm = setup_gigachat()
 
-def get_aspect_chain(examples: List):
+def get_a_chain(examples: List):
     aspect_examples = [
         {
             "text": example["text"], 
@@ -35,7 +35,7 @@ def get_aspect_chain(examples: List):
     return chain
 
 
-def get_aspect_opinion_chain(examples: List):
+def get_ao_chain(examples: List):
     duplet_examples = [
         {
             "text": example["text"], 
@@ -53,8 +53,8 @@ def get_aspect_opinion_chain(examples: List):
     return chain
 
 
-def get_aste_ao_p_chain(examples: List):
-    ao_chain = get_aspect_opinion_chain(examples)
+def get_ao_p_chain(examples: List):
+    ao_chain = get_ao_chain(examples)
     examples = [
         {
             "text": example["text"], 
