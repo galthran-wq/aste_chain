@@ -30,3 +30,17 @@ class ASTE_AO_RetrieverExampleSelector(RetrieverExampleSelector):
             }
             for doc in docs
         ]
+
+
+class AOP_RetrieverExampleSelector(RetrieverExampleSelector):
+    def format_docs(self, docs):
+        return [
+            {
+                "text": doc.page_content, 
+                "triplets": str([
+                    triplet
+                    for triplet in doc.metadata["triplets"]
+                ]).replace("'", "\"")
+            }
+            for doc in docs
+        ]

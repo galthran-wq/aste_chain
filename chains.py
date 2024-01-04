@@ -13,7 +13,10 @@ from prompts import (
 )
 from utils import setup_gigachat, get_retriever
 from parsers import AnyListOutputParser
-from example_selectors import ASTE_AO_RetrieverExampleSelector
+from example_selectors import (
+    ASTE_AO_RetrieverExampleSelector,
+    AOP_RetrieverExampleSelector,
+)
 
 llm = setup_gigachat()
 
@@ -94,6 +97,19 @@ def get_retrieve_ao_chain(dataset_path: str, k_examples=20):
     prompt = get_fewshot_gen_aspect_opinion_prompt(example_selector=example_selector)
     chain = (
         {"text": RunnablePassthrough(), "duplets": lambda x: [] } # duplets are populated by example selector
+        | prompt
+        | llm
+        | AnyListOutputParser()
+    )
+    return chain
+
+
+def get_retrieve_aop_chain(dataset_path: str, k_examples=20):
+    retriever = get_retriever(dataset_path=dataset_path, k_examples=k_examples)
+    example_selector = AOP_RetrieverExampleSelector(retriever)
+    prompt = get_fewshot_aop_prompt(example_selector=example_selector)
+    chain = (
+        {"text": RunnablePassthrough(), "triplets": lambda x: [] } # triplets are populated by example selector
         | prompt
         | llm
         | AnyListOutputParser()

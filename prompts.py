@@ -88,7 +88,7 @@ def get_fewshot_gen_polarity_from_aspects_opinions_prompt(examples):
     return final_prompt
 
 
-def get_fewshot_aop_prompt(examples):
+def get_fewshot_aop_prompt(examples=None, example_selector=None):
     system_prompt = """
 Ты -- опытный работник банка. Твоя задача понимать, что людям нравится или не нравится в работе банка. Для этого ты занимаешься аспектно-ориентированным анализом настроения клиентов.
 Ты выделяешь из отзывов клиентов термины аспектов (aspect term), термины мнения (opinion term), и полярности.
@@ -106,6 +106,8 @@ def get_fewshot_aop_prompt(examples):
     few_shot_prompt = FewShotChatMessagePromptTemplate(
         example_prompt=example_prompt,
         examples=examples,
+        example_selector=example_selector,
+        input_variables=["text", "triplets"]
     )
     final_prompt = ChatPromptTemplate.from_messages(
         [
