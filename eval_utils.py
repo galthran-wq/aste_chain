@@ -34,6 +34,7 @@ def extract_spans_extraction(task, seq):
                 extractions.append((a, b))
         elif task in ['tasd', 'aste']:
             all_pt = seq.split('; ')
+            all_pt = [el for el in all_pt if el != '']
             for pt in all_pt:
                 pt = pt[1:-1]
                 try:
