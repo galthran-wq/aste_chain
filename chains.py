@@ -83,7 +83,7 @@ def get_aop_chain(examples: List):
         examples=examples
     )
     chain = (
-        {"text": RunnablePassthrough()}
+        {"text": RunnablePassthrough(), "triplets": lambda x: []}
         | prompt
         | llm
         | AnyListOutputParser()

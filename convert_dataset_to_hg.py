@@ -52,7 +52,7 @@ def main(src, dst):
             entry = {
                 "text": text,
                 "triplets_python_str": triplets_str,
-                "triplets_str": get_extraction_aste_targets(
+                "triplets": get_extraction_aste_targets(
                     [line.split("####")[0].split()],
                     [eval(line.split("####")[1])]
                 )[0]

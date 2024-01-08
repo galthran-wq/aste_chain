@@ -87,7 +87,7 @@ def main(
     results_log_dir = './results_log'
     if not os.path.exists(results_log_dir):
         os.mkdir(results_log_dir)
-    log_file_path = f"{results_log_dir}/{chain_str}-{dataset_path.split('/')[-1].split('.')[0]}-{eval_subset}.txt"
+    log_file_path = f"{results_log_dir}/{chain_str}-{dataset_path.split('/')[-1].split('.')[0]}-{eval_subset}{'-debug' if debug else ''}.txt"
 
     ds = ds.map(set_triplets)
     chain = get_chain(chain_str, ds[train_subset], dataset_path + f"/{train_subset}")
