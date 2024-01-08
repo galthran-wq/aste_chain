@@ -48,14 +48,15 @@ def main(src, dst):
     for name, lines in zip(["train", "val", "test"], [trainlines, vallines, testlines]):
         dataset = []
         for line in lines:
-            text, triplets_str = parse_example_to_string(line)
+            text, example_triplets = parse_example(line)
+            text, triplets_str = example_to_string(text, example_triplets)
             entry = {
                 "text": text,
-                "triplets_python_str": triplets_str,
-                "triplets": get_extraction_aste_targets(
+                "triplets": triplets_str,
+                "triplets_str": get_extraction_aste_targets(
                     [line.split("####")[0].split()],
                     [eval(line.split("####")[1])]
-                )[0]
+                )[0],
             }
             dataset.append(entry)
         dataset_dict[name] = Dataset.from_list(dataset)
