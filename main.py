@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+from typing import List
 
 import datasets
 from langchain.globals import set_debug
@@ -11,6 +12,7 @@ import chains
 from eval_utils import compute_scores
 from data_utils import write_results_to_log
 from loguru import logger
+from pydantic_models import ASTEAnswer
 
 def compute_metrics(sents, pred, true):
     sents = [
@@ -35,16 +37,17 @@ def get_chain(chain_str: str, dataset: datasets.Dataset = None, dataset_path:str
         chain = chain_getter(dataset_path)
     else:
         examples = list(dataset.select(range(min(40, len(dataset)))))
+        for example in examples:
+            example['triplets'] = ASTEAnswer(triplets=example['triplets'])
         chain = chain_getter(examples)
     return chain
 
 
-def set_triplets(entry):
-    entry['triplets'] = entry['triplets_python_str']
-    return entry
-
-
-def fix_preds_format(result_list):
+def fix_preds_format(result_list: List[List[tuple]]):
+    result_list = [
+        [ triplet for triplet in triplets if all(el is not None for el in triplet) ]
+        for triplets in result_list
+    ]
     n_broken = 0
     n_wrong_format = sum(el is None for el in result_list)
     print(f"n wrong format = {n_wrong_format}")
@@ -89,7 +92,6 @@ def main(
         os.mkdir(results_log_dir)
     log_file_path = f"{results_log_dir}/{chain_str}-{dataset_path.split('/')[-1].split('.')[0]}-{eval_subset}{'-debug' if debug else ''}.txt"
 
-    ds = ds.map(set_triplets)
     chain = get_chain(chain_str, ds[train_subset], dataset_path + f"/{train_subset}")
     # does not print anything
     # logger.add(log_file_path, colorize=True, enqueue=True)
@@ -97,12 +99,16 @@ def main(
     callbacks = []
     # wordaround
     with open(log_file_path, 'w') as sys.stdout:
-        result = run_chain(
+        result: List[ASTEAnswer] = run_chain(
             chain=chain, 
             texts=ds[eval_subset]['text'], 
             callbacks=callbacks,
             max_workers=max_workers
         )
+        result: List[List[tuple]] = [
+            [ (triplet.aspect_term, triplet.opinion_term, triplet.sentiment) for triplet in answer.triplets ]
+            for answer in result
+        ]
         result_fixed = fix_preds_format(result)
         raw_scores, fixed_scores, _, _, _ =compute_metrics(
             ds[eval_subset]['text'],
