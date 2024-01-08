@@ -1,15 +1,24 @@
 from langchain.prompts import ChatPromptTemplate
 from langchain.prompts import FewShotChatMessagePromptTemplate
 
+ASTE_FORMAT_TEMPLATE = """Твой ответ обязательно должен соответствовать формату JSON. Схема ответа:
+{{
+    // Характеристика
+    "aspect_term": string,
+    "opinion_term": string,
+    "sentiment": "POS" или "NEG",
+}}"""
 
 def get_fewshot_gen_aspect_prompt(examples):
-    system_prompt = """
+    system_prompt = f"""
 Ты -- опытный работник банка. Твоя задача понимать, что людям нравится или не нравится в работе банка. Для этого ты занимаешься аспектно-ориентированным анализом настроения клиентов.
 Ты выделяешь из отзывов клиентов термины аспектов (aspect term).
 Термины аспектов (aspect terms) -- характеристики конкретного элемента или товара, продукта или сервиса, которую анализируют для определения настроения или отношения. Аспектами могут быть: качество, цена, удобство использования и т.д..
 
 Условия:
 - Термины аспектов и термины мнений должны содержаться в тексте отзыва.
+
+{ASTE_FORMAT_TEMPLATE}
 """
     example_prompt = ChatPromptTemplate.from_messages([
         ("user", "Отзыв:\n{text}"),
@@ -30,7 +39,7 @@ def get_fewshot_gen_aspect_prompt(examples):
 
 
 def get_fewshot_gen_aspect_opinion_prompt(examples=None, example_selector=None):
-    system_prompt = """
+    system_prompt = f"""
 Ты -- опытный работник банка. Твоя задача понимать, что людям нравится или не нравится в работе банка. Для этого ты занимаешься аспектно-ориентированным анализом настроения клиентов.
 Ты выделяешь из отзывов клиентов термины аспектов (aspect term) и термины мнения (opinion term).
 Термины аспектов (aspect terms) -- конкретного элемента или характеристика товара, продукта или сервиса, которую анализируют для определения настроения или отношения. Аспектами могут быть: качество, цена, удобство использования и т.д..
@@ -38,6 +47,8 @@ def get_fewshot_gen_aspect_opinion_prompt(examples=None, example_selector=None):
 
 Условия:
 - Термины аспектов и термины мнений должны содержаться в тексте отзыва.
+
+{ASTE_FORMAT_TEMPLATE}
 """
     example_prompt = ChatPromptTemplate.from_messages([
         ("user", "Отзыв:\n{text}"),
@@ -60,7 +71,7 @@ def get_fewshot_gen_aspect_opinion_prompt(examples=None, example_selector=None):
 
 
 def get_fewshot_gen_polarity_from_aspects_opinions_prompt(examples):
-    system_prompt = """
+    system_prompt = f"""
 Ты -- опытный работник банка. Твоя задача понимать, что людям нравится или не нравится в работе банка. Для этого ты занимаешься аспектно-ориентированным анализом настроения клиентов.
 Ты выделяешь из отзывов клиентов полярности для терминов аспектов (aspect term) и терминов мнения (opinion term).
 Термины аспектов (aspect terms) -- конкретного элемента или характеристика товара, продукта или сервиса, которую анализируют для определения настроения или отношения. Аспектами могут быть: качество, цена, удобство использования и т.д..
@@ -69,6 +80,8 @@ def get_fewshot_gen_polarity_from_aspects_opinions_prompt(examples):
 
 Условия:
 - Термины аспектов и термины мнений должны содержаться в тексте отзыва.
+
+{ASTE_FORMAT_TEMPLATE}
 """
     example_prompt = ChatPromptTemplate.from_messages([
         ("user", "Отзыв:\n{text}\nСписок терминов аспектов и терминов полярности:\n{duplets}"),
@@ -89,15 +102,17 @@ def get_fewshot_gen_polarity_from_aspects_opinions_prompt(examples):
 
 
 def get_fewshot_aop_prompt(examples=None, example_selector=None):
-    system_prompt = """
+    system_prompt = f"""
 Ты -- опытный работник банка. Твоя задача понимать, что людям нравится или не нравится в работе банка. Для этого ты занимаешься аспектно-ориентированным анализом настроения клиентов.
-Ты выделяешь из отзывов клиентов термины аспектов (aspect term), термины мнения (opinion term), и полярности.
+Ты выделяешь из отзывов клиентов термины аспектов (aspect term), термины мнения (opinion term), и полярности настроения.
 Термины аспектов (aspect terms) -- конкретного элемента или характеристика товара, продукта или сервиса, которую анализируют для определения настроения или отношения. Аспектами могут быть: качество, цена, удобство использования и т.д..
 Термины мнения (opinion terms) -- выражения, отражающие отношение клиента к аспекту.
 Полярность (sentiment polarity) -- примает одно значение из "POS" или "NEG".
 
 Условия:
 - Термины аспектов и термины мнений должны содержаться в тексте отзыва.
+
+{ASTE_FORMAT_TEMPLATE}
 """
     example_prompt = ChatPromptTemplate.from_messages([
         ("user", "Отзыв:\n{text}\nСписок терминов аспектов, терминов полярности и полярностей из отзыва:"),
