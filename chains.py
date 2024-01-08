@@ -1,9 +1,10 @@
+from __future__ import annotations
 import os
-from typing import List
+from typing import List, Literal, Union
 
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
-from langchain_core.output_parsers import StrOutputParser
 from langchain.output_parsers.json import SimpleJsonOutputParser
+from langchain.output_parsers import PydanticOutputParser
 
 from prompts import (
     get_fewshot_gen_aspect_opinion_prompt, 
@@ -17,14 +18,15 @@ from example_selectors import (
     ASTE_AO_RetrieverExampleSelector,
     AOP_RetrieverExampleSelector,
 )
+from pydantic_models import ASTEAnswer
 
 llm = setup_gigachat()
 
-def get_a_chain(examples: List):
+def get_a_chain(examples: List[dict[Literal['text'] | Literal['triplets'], str | ASTEAnswer]]):
     aspect_examples = [
         {
             "text": example["text"], 
-            "aspects": str([triplet[0] for triplet in example["triplets"]]).replace("'", "\"")
+            "aspects": example["triplets"].model_dump_aspect_json()
         }
         for example in examples
     ]
@@ -33,16 +35,16 @@ def get_a_chain(examples: List):
         {"text": RunnablePassthrough()}
         | prompt
         | llm
-        | AnyListOutputParser()
+        | PydanticOutputParser(pydantic_object=ASTEAnswer)
     )
     return chain
 
 
-def get_ao_chain(examples: List):
+def get_ao_chain(examples: List[dict[Literal['text'] | Literal['triplets'], str | ASTEAnswer]]):
     duplet_examples = [
         {
             "text": example["text"], 
-            "duplets": str([(triplet[0], triplet[1]) for triplet in example["triplets"]]).replace("'", "\"")
+            "duplets": example["triplets"].model_dump_duplet_json(),
         }
         for example in examples
     ]
@@ -51,18 +53,18 @@ def get_ao_chain(examples: List):
         {"text": RunnablePassthrough(), "duplets": lambda x: []}
         | prompt
         | llm
-        | AnyListOutputParser()
+        | PydanticOutputParser(pydantic_object=ASTEAnswer)
     )
     return chain
 
 
-def get_ao_p_chain(examples: List):
+def get_ao_p_chain(examples: List[dict[Literal['text'] | Literal['triplets']]]):
     ao_chain = get_ao_chain(examples)
     examples = [
         {
             "text": example["text"], 
-            "duplets": str([(triplet[0], triplet[1]) for triplet in example["triplets"]]).replace("'", "\""),
-            "triplets": str([(triplet[0], triplet[1], triplet[2]) for triplet in example["triplets"]]).replace("'", "\"")
+            "duplets": example["triplets"].model_dump_duplet_json(),
+            "triplets": example["triplets"].model_dump_json(),
         }
         for example in examples
     ]
@@ -73,12 +75,19 @@ def get_ao_p_chain(examples: List):
         {"text": RunnablePassthrough(), "duplets": ao_chain}
         | prompt
         | llm
-        | AnyListOutputParser()
+        | PydanticOutputParser(pydantic_object=ASTEAnswer)
     )
     return two_staged_chain
 
 
-def get_aop_chain(examples: List):
+def get_aop_chain(examples: List[dict[Literal['text'] | Literal['triplets']]]):
+    examples = [
+        {
+            "text": example["text"], 
+            "triplets": example["triplets"].model_dump_json(),
+        }
+        for example in examples
+    ]
     prompt = get_fewshot_aop_prompt(
         examples=examples
     )
@@ -86,7 +95,7 @@ def get_aop_chain(examples: List):
         {"text": RunnablePassthrough(), "triplets": lambda x: []}
         | prompt
         | llm
-        | AnyListOutputParser()
+        | PydanticOutputParser(pydantic_object=ASTEAnswer)
     )
     return chain
 
@@ -99,7 +108,7 @@ def get_retrieve_ao_chain(dataset_path: str, k_examples=20):
         {"text": RunnablePassthrough(), "duplets": lambda x: [] } # duplets are populated by example selector
         | prompt
         | llm
-        | AnyListOutputParser()
+        | PydanticOutputParser(pydantic_object=ASTEAnswer)
     )
     return chain
 
@@ -112,6 +121,6 @@ def get_retrieve_aop_chain(dataset_path: str, k_examples=20):
         {"text": RunnablePassthrough(), "triplets": lambda x: [] } # triplets are populated by example selector
         | prompt
         | llm
-        | AnyListOutputParser()
+        | PydanticOutputParser(pydantic_object=ASTEAnswer)
     )
     return chain
