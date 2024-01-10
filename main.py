@@ -46,6 +46,7 @@ def get_chain(chain_str: str, dataset: datasets.Dataset = None):
 def fix_preds_format(result_list: List[List[tuple]]):
     result_list = [
         [ triplet for triplet in triplets if all(el is not None for el in triplet) ]
+        if triplets is not None else None
         for triplets in result_list
     ]
     n_broken = 0
@@ -103,10 +104,12 @@ def main(
             chain=chain, 
             texts=ds[eval_subset]['text'], 
             callbacks=callbacks,
-            max_workers=max_workers
+            max_workers=max_workers,
+            print_exceptions=True,
         )
         result: List[List[tuple]] = [
             [ (triplet.aspect_term, triplet.opinion_term, triplet.sentiment) for triplet in answer.triplets ]
+            if answer is not None else None
             for answer in result
         ]
         result_fixed = fix_preds_format(result)
