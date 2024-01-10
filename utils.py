@@ -48,8 +48,6 @@ def run_chain(
     if callbacks is None:
         callbacks = []
     result = []
-    batch_size = 32
-    max_workers = 2
     for batch in tqdm(chunks(texts, batch_size), total=len(texts) // batch_size):
         try:
             result.extend(
@@ -58,8 +56,21 @@ def run_chain(
         except Exception as e:
             if print_exceptions:
                 print(e)
-            result.extend([ None ] * batch_size)
-    return result
+            result.extend([ None ] * len(batch))
+    print(f"n broken entries: {sum(el is None for el in result)}. Rerun...")
+    new_result = []
+    for i, entry in tqdm(enumerate(result), total=len(result)):
+        if entry is None:
+            try:
+                new_result.append(
+                    chain.invoke(texts[i])
+                )
+            except Exception as e:
+                new_result.append(None)
+        else:
+            new_result.append(entry)
+    print(f"n broken entries: {sum(el is None for el in new_result)}.")
+    return new_result
 
 
 def get_retriever(dataset: List[dict[str, Any]], k_examples=20, content_col="text", triplets_col="triplets"):
