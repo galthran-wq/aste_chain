@@ -30,11 +30,11 @@ def compute_metrics(sents, pred, true):
     )
 
 
-def get_chain(chain_str: str, dataset: datasets.Dataset = None, dataset_path:str = None):
+def get_chain(chain_str: str, dataset: datasets.Dataset = None):
     chain_getter = getattr(chains, f"get_{chain_str}_chain")
     uses_full_dataset = "retrieve" in chain_str
     if uses_full_dataset:
-        chain = chain_getter(dataset_path)
+        chain = chain_getter(dataset)
     else:
         examples = list(dataset.select(range(min(40, len(dataset)))))
         for example in examples:
@@ -92,7 +92,7 @@ def main(
         os.mkdir(results_log_dir)
     log_file_path = f"{results_log_dir}/{chain_str}-{dataset_path.split('/')[-1].split('.')[0]}-{eval_subset}{'-debug' if debug else ''}.txt"
 
-    chain = get_chain(chain_str, ds[train_subset], dataset_path + f"/{train_subset}")
+    chain = get_chain(chain_str, ds[train_subset])
     # does not print anything
     # logger.add(log_file_path, colorize=True, enqueue=True)
     # callbacks = [FileCallbackHandler(log_file_path)])

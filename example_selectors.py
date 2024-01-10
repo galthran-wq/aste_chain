@@ -1,5 +1,7 @@
 from langchain_core.example_selectors.base import BaseExampleSelector
 
+from pydantic_models import ASTEAnswer
+
 
 class RetrieverExampleSelector(BaseExampleSelector):
     def __init__(self, retriever):
@@ -23,10 +25,7 @@ class ASTE_AO_RetrieverExampleSelector(RetrieverExampleSelector):
         return [
             {
                 "text": doc.page_content, 
-                "duplets": str([
-                    (triplet[0], triplet[1]) 
-                    for triplet in doc.metadata["triplets"]
-                ]).replace("'", "\"")
+                "duplets": ASTEAnswer(triplets=doc.metadata["triplets"]).model_dump_duplet_json()
             }
             for doc in docs
         ]
@@ -37,10 +36,7 @@ class AOP_RetrieverExampleSelector(RetrieverExampleSelector):
         return [
             {
                 "text": doc.page_content, 
-                "triplets": str([
-                    triplet
-                    for triplet in doc.metadata["triplets"]
-                ]).replace("'", "\"")
+                "triplets": ASTEAnswer(triplets=doc.metadata["triplets"]).model_dump_json()
             }
             for doc in docs
         ]

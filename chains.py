@@ -5,6 +5,7 @@ from typing import List, Literal, Union
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain.output_parsers.json import SimpleJsonOutputParser
 from langchain.output_parsers import PydanticOutputParser
+from datasets import Dataset
 
 from prompts import (
     get_fewshot_gen_aspect_opinion_prompt, 
@@ -113,8 +114,8 @@ def get_retrieve_ao_chain(dataset_path: str, k_examples=20):
     return chain
 
 
-def get_retrieve_aop_chain(dataset_path: str, k_examples=20):
-    retriever = get_retriever(dataset_path=dataset_path, k_examples=k_examples)
+def get_retrieve_aop_chain(dataset: Dataset, k_examples=20):
+    retriever = get_retriever(dataset=dataset, k_examples=k_examples)
     example_selector = AOP_RetrieverExampleSelector(retriever)
     prompt = get_fewshot_aop_prompt(example_selector=example_selector)
     chain = (
