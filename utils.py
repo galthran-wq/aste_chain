@@ -1,8 +1,13 @@
+from __future__ import annotations
 import os
+from typing import List, Any
 from tqdm.auto import tqdm
 from pathlib import Path
+
 from langchain.chat_models.gigachat import GigaChat
 from langchain.vectorstores import SKLearnVectorStore
+from langchain_core.documents import Document
+from datasets import Dataset
 
 from loaders import HuggingFaceDatasetLoader
 from embeddings import E5HuggingfaceEmbeddings
@@ -57,9 +62,11 @@ def run_chain(
     return result
 
 
-def get_retriever(dataset_path, k_examples=20):
-    loader = HuggingFaceDatasetLoader(dataset_path, "text")
-    data = loader.load()
+def get_retriever(dataset: List[dict[str, Any]], k_examples=20, content_col="text", triplets_col="triplets"):
+    data: List[Document] = [
+        Document(page_content=entry[content_col], metadata={"triplets": entry[triplets_col]})
+        for entry in dataset
+    ]
     emb = E5HuggingfaceEmbeddings(
         model_name=os.path.expanduser("~") + "/models/multilingual-e5-small"
     )
