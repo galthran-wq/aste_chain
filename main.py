@@ -6,6 +6,7 @@ from typing import List
 import datasets
 from langchain.globals import set_debug
 from langchain.callbacks import FileCallbackHandler
+import fire
 
 from utils import run_chain
 import chains
@@ -30,13 +31,13 @@ def compute_metrics(sents, pred, true):
     )
 
 
-def get_chain(chain_str: str, dataset: datasets.Dataset = None):
+def get_chain(chain_str: str, dataset: datasets.Dataset = None, n_examples=40):
     chain_getter = getattr(chains, f"get_{chain_str}_chain")
     uses_full_dataset = "retrieve" in chain_str
     if uses_full_dataset:
-        chain = chain_getter(dataset)
+        chain = chain_getter(dataset, n_examples=n_examples)
     else:
-        examples = list(dataset.select(range(min(40, len(dataset)))))
+        examples = list(dataset.select(range(min(n_examples, len(dataset)))))
         for example in examples:
             example['triplets'] = ASTEAnswer(triplets=example['triplets'])
         chain = chain_getter(examples)
@@ -75,31 +76,43 @@ def fix_preds_format(result_list: List[List[tuple]]):
 
 
 def main(
+    *args,
     dataset_path: str,
     chain_str: str,
     train_subset = "train",
     eval_subset = "val",
     debug=False,
     max_workers=10,
+    n_examples=40,
 ):
     set_debug(debug)
     ds = datasets.load_from_disk(dataset_path)
+    # ds[eval_subset] = ds[eval_subset].select(range(100))
     if debug:
         ds[eval_subset] = ds[eval_subset].select(range(5))
         max_workers = 1
 
-    results_log_dir = './results_log'
+    results_log_dir = './new_results_log'
     if not os.path.exists(results_log_dir):
         os.mkdir(results_log_dir)
-    log_file_path = f"{results_log_dir}/{chain_str}-{dataset_path.split('/')[-1].split('.')[0]}-{eval_subset}{'-debug' if debug else ''}.txt"
+    log_file_path = f"{results_log_dir}/{chain_str}-{dataset_path.split('/')[-1].split('.')[0]}-{eval_subset}{'-debug' if debug else ''}{n_examples}-shot.txt"
 
-    chain = get_chain(chain_str, ds[train_subset])
     # does not print anything
     # logger.add(log_file_path, colorize=True, enqueue=True)
     # callbacks = [FileCallbackHandler(log_file_path)])
     callbacks = []
     # wordaround
-    with open(log_file_path, 'w') as sys.stdout:
+    with open(log_file_path, 'a') as sys.stdout:
+        print({
+            "dataset_path": dataset_path,
+            "chain_str": chain_str,
+            "train_subset": train_subset,
+            "eval_subset": eval_subset,
+            "debug": debug,
+            "max_workers": max_workers,
+            "n_examples": n_examples,
+        })
+        chain = get_chain(chain_str, ds[train_subset], n_examples=n_examples)
         result: List[ASTEAnswer] = run_chain(
             chain=chain, 
             texts=ds[eval_subset]['text'], 
@@ -124,20 +137,4 @@ def main(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--src", default='./data/bank_sentenized', type=str, required=False)
-    parser.add_argument("--chain", type=str, required=True)
-    parser.add_argument("--train-subset", default="train", type=str, required=False)
-    parser.add_argument("--eval-subset", default="val", type=str, required=False)
-    parser.add_argument("--max-workers", default=10, type=int, required=False)
-    parser.add_argument("--debug", action='store_true')
-    args = parser.parse_args()
-    main(
-        dataset_path=args.src, 
-        chain_str=args.chain,
-        train_subset=args.train_subset,
-        eval_subset=args.eval_subset,
-        debug=args.debug,
-        max_workers=args.max_workers,
-    )
-
+    fire.Fire(main)
