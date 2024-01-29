@@ -84,6 +84,7 @@ def main(
     debug=False,
     max_workers=10,
     n_examples=40,
+    log_file_postfix: str = "",
 ):
     set_debug(debug)
     ds = datasets.load_from_disk(dataset_path)
@@ -95,7 +96,7 @@ def main(
     results_log_dir = './new_results_log'
     if not os.path.exists(results_log_dir):
         os.mkdir(results_log_dir)
-    log_file_path = f"{results_log_dir}/{chain_str}-{dataset_path.split('/')[-1].split('.')[0]}-{eval_subset}{'-debug' if debug else ''}{n_examples}-shot.txt"
+    log_file_path = f"{results_log_dir}/{chain_str}-{dataset_path.split('/')[-1].split('.')[0]}-{eval_subset}{'-debug' if debug else ''}-{n_examples}shot-{log_file_postfix}.txt"
 
     # does not print anything
     # logger.add(log_file_path, colorize=True, enqueue=True)

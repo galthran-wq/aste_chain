@@ -67,7 +67,7 @@ def main(src, dst):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # basic settings
-    parser.add_argument("--src", default='./data/bank_3200_sentenized', type=str, required=False)
-    parser.add_argument("--dst", default='./data/bank_sentenized', type=str, required=False)
+    parser.add_argument("--src", default='./data/banks_sentenized', type=str, required=False)
+    parser.add_argument("--dst", default='./data/hg/banks_sentenized', type=str, required=False)
     args = parser.parse_args()
     main(args.src, args.dst)

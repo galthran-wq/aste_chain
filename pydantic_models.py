@@ -7,7 +7,7 @@ from pydantic import BaseModel, model_validator, model_serializer, Field, AliasC
 class ASTETriplet(BaseModel):
     aspect_term: str
     opinion_term: Optional[str] = None
-    sentiment: Optional[Literal['POS', 'NEG']] = None
+    sentiment: Optional[Literal['POS', 'NEG', 'NEU']] = None
 
     def model_dump_duplet(self):
         as_dict = self.model_dump()

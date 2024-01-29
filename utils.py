@@ -3,6 +3,7 @@ import os
 from typing import List, Any
 from tqdm.auto import tqdm
 from pathlib import Path
+from dataclasses import asdict
 
 from langchain.chat_models.gigachat import GigaChat
 from langchain.vectorstores import SKLearnVectorStore
@@ -24,11 +25,12 @@ def parse_env_file(env_file_path):
     return env_vars
 
 
-def setup_gigachat(env_file_path="./.env"):
+def setup_gigachat(env_file_path="./.env", model=None):
     env = parse_env_file(env_file_path)
     chat = GigaChat(
         **env
     )
+    print(chat.to_json())
     return chat
 
 def chunks(lst, n):
@@ -73,14 +75,14 @@ def run_chain(
     return new_result
 
 
-def get_retriever(dataset: List[dict[str, Any]], k_examples=20, content_col="text", triplets_col="triplets"):
+def get_retriever(dataset: List[dict[str, Any]], n_examples=10, content_col="text", triplets_col="triplets"):
     data: List[Document] = [
         Document(page_content=entry[content_col], metadata={"triplets": entry[triplets_col]})
         for entry in dataset
     ]
     emb = E5HuggingfaceEmbeddings(
-        model_name=os.path.expanduser("~") + "/models/multilingual-e5-small"
+        model_name=os.path.expanduser("~") + "/models/multilingual-e5-large"
     )
     db = SKLearnVectorStore.from_documents(data, emb)
-    retriever = db.as_retriever(search_kwargs={"k": k_examples})
+    retriever = db.as_retriever(search_kwargs={"k": n_examples})
     return retriever

@@ -202,7 +202,7 @@ def fix_preds_aste(all_pairs, sents):
                     at, ott, ac = p0, p1, p2
                     io_format = 'extraction'
 
-                #print(pair)
+                # print(pair)
                 # AT not in the original sentence
                 if at not in  ' '.join(sents[i]):
                     # print('Issue')

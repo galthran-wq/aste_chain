@@ -1,5 +1,7 @@
 venv
 data*
+!data_utils.py
 *bank*
 .env
 __pycache__
+cache
