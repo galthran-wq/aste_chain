@@ -9,11 +9,11 @@ from langchain.callbacks import FileCallbackHandler
 import fire
 
 from utils import run_chain
-import chains
+import gigachain_extensions.chains as chains
 from eval_utils import compute_scores
 from data_utils import write_results_to_log
 from loguru import logger
-from pydantic_models import ASTEAnswer
+from gigachain_extensions.pydantic_models import ASTEAnswer
 
 def compute_metrics(sents, pred, true):
     sents = [
