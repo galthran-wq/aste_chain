@@ -100,8 +100,8 @@ def get_aop_chain(examples: List[dict[Literal['text'] | Literal['triplets']]]):
     return chain
 
 
-def get_retrieve_ao_chain(dataset_path: str, n_examples=20):
-    retriever = get_retriever(dataset_path=dataset_path, n_examples=n_examples)
+def get_retrieve_ao_chain(dataset_path: str, n_examples=20, mrr=False):
+    retriever = get_retriever(dataset_path=dataset_path, n_examples=n_examples, mrr=mrr)
     example_selector = ASTE_AO_RetrieverExampleSelector(retriever)
     prompt = get_fewshot_gen_aspect_opinion_prompt(example_selector=example_selector)
     chain = (
@@ -113,8 +113,8 @@ def get_retrieve_ao_chain(dataset_path: str, n_examples=20):
     return chain
 
 
-def get_retrieve_aop_chain(dataset: Dataset, n_examples=20):
-    retriever = get_retriever(dataset=dataset, n_examples=n_examples)
+def get_retrieve_aop_chain(dataset: Dataset, n_examples=20, mrr=False):
+    retriever = get_retriever(dataset=dataset, n_examples=n_examples, mrr=mrr)
     example_selector = AOP_RetrieverExampleSelector(retriever)
     prompt = get_fewshot_aop_prompt(example_selector=example_selector)
     chain = (

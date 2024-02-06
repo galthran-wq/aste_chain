@@ -6,7 +6,7 @@ from pathlib import Path
 from dataclasses import asdict
 
 from langchain.chat_models.gigachat import GigaChat
-from langchain.vectorstores import SKLearnVectorStore
+from langchain.vectorstores.sklearn import SKLearnVectorStore
 from langchain_core.documents import Document
 from datasets import Dataset
 
@@ -75,7 +75,7 @@ def run_chain(
     return new_result
 
 
-def get_retriever(dataset: List[dict[str, Any]], n_examples=10, content_col="text", triplets_col="triplets"):
+def get_retriever(dataset: List[dict[str, Any]], n_examples=10, content_col="text", triplets_col="triplets", mrr=False):
     data: List[Document] = [
         Document(page_content=entry[content_col], metadata={"triplets": entry[triplets_col]})
         for entry in dataset
@@ -83,6 +83,7 @@ def get_retriever(dataset: List[dict[str, Any]], n_examples=10, content_col="tex
     emb = E5HuggingfaceEmbeddings(
         model_name=os.path.expanduser("~") + "/models/multilingual-e5-large"
     )
+    print(emb.model_name)
     db = SKLearnVectorStore.from_documents(data, emb)
-    retriever = db.as_retriever(search_kwargs={"k": n_examples})
+    retriever = db.as_retriever(search_kwargs={"k": n_examples}, search_type="similarity" if not mrr else "mmr")
     return retriever

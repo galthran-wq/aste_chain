@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-from typing import List
+from typing import List, Optional
 
 import datasets
 from langchain.globals import set_debug
@@ -31,11 +31,11 @@ def compute_metrics(sents, pred, true):
     )
 
 
-def get_chain(chain_str: str, dataset: datasets.Dataset = None, n_examples=40):
+def get_chain(chain_str: str, dataset: datasets.Dataset = None, n_examples=40, mrr=None):
     chain_getter = getattr(chains, f"get_{chain_str}_chain")
     uses_full_dataset = "retrieve" in chain_str
     if uses_full_dataset:
-        chain = chain_getter(dataset, n_examples=n_examples)
+        chain = chain_getter(dataset, n_examples=n_examples, mrr=mrr)
     else:
         examples = list(dataset.select(range(min(n_examples, len(dataset)))))
         for example in examples:
@@ -84,6 +84,7 @@ def main(
     debug=False,
     max_workers=2,
     n_examples=40,
+    mrr: Optional[bool] = None,
     log_file_postfix: str = "",
 ):
     set_debug(debug)
@@ -113,7 +114,7 @@ def main(
             "max_workers": max_workers,
             "n_examples": n_examples,
         })
-        chain = get_chain(chain_str, ds[train_subset], n_examples=n_examples)
+        chain = get_chain(chain_str, ds[train_subset], n_examples=n_examples, mrr=mrr)
         result: List[ASTEAnswer] = run_chain(
             chain=chain, 
             texts=ds[eval_subset]['text'], 
