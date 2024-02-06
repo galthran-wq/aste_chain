@@ -8,7 +8,7 @@ from langchain.globals import set_debug
 from langchain.callbacks import FileCallbackHandler
 import fire
 
-from utils import run_chain
+from gigachain_extensions.utils import run_chain
 import gigachain_extensions.chains as chains
 from eval_utils import compute_scores
 from data_utils import write_results_to_log
@@ -82,7 +82,7 @@ def main(
     train_subset = "train",
     eval_subset = "val",
     debug=False,
-    max_workers=10,
+    max_workers=2,
     n_examples=40,
     log_file_postfix: str = "",
 ):
@@ -120,6 +120,7 @@ def main(
             callbacks=callbacks,
             max_workers=max_workers,
             print_exceptions=True,
+            batch_size=max_workers,
         )
         result: List[List[tuple]] = [
             [ (triplet.aspect_term, triplet.opinion_term, triplet.sentiment) for triplet in answer.triplets ]

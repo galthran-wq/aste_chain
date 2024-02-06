@@ -10,8 +10,8 @@ from langchain.vectorstores import SKLearnVectorStore
 from langchain_core.documents import Document
 from datasets import Dataset
 
-from gigachain_extensions.loaders import HuggingFaceDatasetLoader
-from gigachain_extensions.embeddings import E5HuggingfaceEmbeddings
+from .loaders import HuggingFaceDatasetLoader
+from .embeddings import E5HuggingfaceEmbeddings
 
 
 def parse_env_file(env_file_path):

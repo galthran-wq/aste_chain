@@ -1,6 +1,6 @@
 from langchain_core.example_selectors.base import BaseExampleSelector
 
-from pydantic_models import ASTEAnswer
+from .pydantic_models import ASTEAnswer
 
 
 class RetrieverExampleSelector(BaseExampleSelector):

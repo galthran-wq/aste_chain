@@ -347,5 +347,16 @@ def compute_scores(pred_seqs, gold_seqs, sents, io_format, task):
     print("\nResults of fixed output")
     fixed_scores = compute_f1_scores(all_predictions_fixed, all_labels)
     print(fixed_scores)
+
+    cnt = 0
+    for pred_i, fixed_pred_i, true_i in zip(all_predictions, all_predictions_fixed, all_labels):
+        # if set(pred_i) != set(fixed_pred_i):
+        print(f"Pred: {pred_i}")
+        print(f"Fixed pred: {fixed_pred_i}")
+        print(f"True: {true_i}")
+        print("-" * 100)
+        cnt += 1
+        if cnt == 300:
+            break
     
     return raw_scores, fixed_scores, all_labels, all_predictions, all_predictions_fixed

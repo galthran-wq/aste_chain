@@ -7,19 +7,18 @@ from langchain.output_parsers.json import SimpleJsonOutputParser
 from langchain.output_parsers import PydanticOutputParser
 from datasets import Dataset
 
-from prompts import (
+from .prompts import (
     get_fewshot_gen_aspect_opinion_prompt, 
     get_fewshot_gen_aspect_prompt,
     get_fewshot_gen_polarity_from_aspects_opinions_prompt,
     get_fewshot_aop_prompt
 )
-from utils import setup_gigachat, get_retriever
-from parsers import AnyListOutputParser
-from example_selectors import (
+from .utils import setup_gigachat, get_retriever
+from .example_selectors import (
     ASTE_AO_RetrieverExampleSelector,
     AOP_RetrieverExampleSelector,
 )
-from pydantic_models import ASTEAnswer
+from .pydantic_models import ASTEAnswer
 
 llm = setup_gigachat()
 
