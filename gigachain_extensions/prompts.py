@@ -197,7 +197,7 @@ def get_fewshot_aop_prompt(examples=None, example_selector=None):
         [
             ("system", system_prompt),
             few_shot_prompt,
-            ("user", "Отзыв:\n{text}\nСписок терминов аспектов, терминов полярности и полярностей из отзыва:")
+            ("user", "Отзыв:\n{text}\nСписок терминов аспектов, терминов мнения и полярностей из отзыва:")
         ]
     )
     return final_prompt

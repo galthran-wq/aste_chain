@@ -5,6 +5,7 @@ from typing import List, Literal, Union
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain.output_parsers.json import SimpleJsonOutputParser
 from langchain.output_parsers import PydanticOutputParser
+from langchain_core.output_parsers import StrOutputParser
 from datasets import Dataset
 
 from .prompts import (
@@ -36,7 +37,7 @@ def get_a_chain(examples: List[dict[Literal['text'] | Literal['triplets'], str |
         {"text": RunnablePassthrough()}
         | prompt
         | llm
-        | PydanticOutputParser(pydantic_object=ASTEAnswer)
+        | StrOutputParser()
     )
     return chain
 
@@ -56,7 +57,7 @@ def get_a_o_chain(examples: List[dict[Literal['text', 'triplets'], str | ASTEAns
         {"text": RunnablePassthrough(), "aspects": a_chain}
         | prompt
         | llm
-        | PydanticOutputParser(pydantic_object=ASTEAnswer)
+        | StrOutputParser()
     )
     return chain
 
@@ -74,7 +75,7 @@ def get_ao_chain(examples: List[dict[Literal['text'] | Literal['triplets'], str 
         {"text": RunnablePassthrough()}
         | prompt
         | llm
-        | PydanticOutputParser(pydantic_object=ASTEAnswer)
+        | StrOutputParser()
     )
     return chain
 
@@ -148,10 +149,10 @@ def get_retrieve_ao_chain(dataset: Dataset, n_examples=20, mrr=False):
     example_selector = AO_RetrieverExampleSelector(retriever)
     prompt = get_fewshot_gen_aspect_opinion_prompt(example_selector=example_selector)
     chain = (
-        {"text": RunnablePassthrough(), "duplets": lambda x: [] } # duplets are populated by example selector
+        {"text": RunnablePassthrough()}
         | prompt
         | llm
-        | PydanticOutputParser(pydantic_object=ASTEAnswer)
+        | StrOutputParser()
     )
     return chain
 
@@ -161,7 +162,7 @@ def get_retrieve_aop_chain(dataset: Dataset, n_examples=20, mrr=False):
     example_selector = AOP_RetrieverExampleSelector(retriever)
     prompt = get_fewshot_aop_prompt(example_selector=example_selector)
     chain = (
-        {"text": RunnablePassthrough(), "triplets": lambda x: [] } # triplets are populated by example selector
+        {"text": RunnablePassthrough()}
         | prompt
         | llm
         | PydanticOutputParser(pydantic_object=ASTEAnswer)
