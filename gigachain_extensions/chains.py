@@ -11,7 +11,8 @@ from .prompts import (
     get_fewshot_gen_aspect_opinion_prompt, 
     get_fewshot_gen_aspect_prompt,
     get_fewshot_gen_polarity_from_aspects_opinions_prompt,
-    get_fewshot_aop_prompt
+    get_fewshot_aop_prompt,
+    get_fewshot_gen_opinion_from_aspect_prompt,
 )
 from .utils import setup_gigachat, get_retriever
 from .example_selectors import (
@@ -33,6 +34,26 @@ def get_a_chain(examples: List[dict[Literal['text'] | Literal['triplets'], str |
     prompt = get_fewshot_gen_aspect_prompt(aspect_examples)
     chain = (
         {"text": RunnablePassthrough()}
+        | prompt
+        | llm
+        | PydanticOutputParser(pydantic_object=ASTEAnswer)
+    )
+    return chain
+
+
+def get_a_o_chain(examples: List[dict[Literal['text', 'triplets'], str | ASTEAnswer]]):
+    a_chain = get_a_chain(examples)
+    examples = [
+        {
+            "text": example["text"], 
+            "aspects": example["triplets"].model_dump_aspect_json(),
+            "duplets": example["triplets"].model_dump_duplet_json(),
+        }
+        for example in examples
+    ]
+    prompt = get_fewshot_gen_opinion_from_aspect_prompt(examples)
+    chain = (
+        {"text": RunnablePassthrough(), "duplets": lambda x: [], "aspects": a_chain}
         | prompt
         | llm
         | PydanticOutputParser(pydantic_object=ASTEAnswer)
@@ -78,6 +99,28 @@ def get_ao_p_chain(examples: List[dict[Literal['text'] | Literal['triplets']]]):
         | PydanticOutputParser(pydantic_object=ASTEAnswer)
     )
     return two_staged_chain
+
+
+def get_a_o_p_chain(examples: List[dict[Literal['text', 'triplets']]]):
+    a_o_chain = get_a_o_chain(examples)
+    examples = [
+        {
+            "text": example["text"], 
+            "duplets": example["triplets"].model_dump_duplet_json(),
+            "triplets": example["triplets"].model_dump_json(),
+        }
+        for example in examples
+    ]
+    prompt = get_fewshot_gen_polarity_from_aspects_opinions_prompt(
+        examples=examples
+    )
+    three_staged_chain = (
+        {"text": RunnablePassthrough(), "duplets": a_o_chain}
+        | prompt
+        | llm
+        | PydanticOutputParser(pydantic_object=ASTEAnswer)
+    )
+    return three_staged_chain
 
 
 def get_aop_chain(examples: List[dict[Literal['text'] | Literal['triplets']]]):
