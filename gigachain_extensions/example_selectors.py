@@ -20,7 +20,7 @@ class RetrieverExampleSelector(BaseExampleSelector):
         return self.format_docs(best_k_docs)
 
 
-class ASTE_AO_RetrieverExampleSelector(RetrieverExampleSelector):
+class AO_RetrieverExampleSelector(RetrieverExampleSelector):
     def format_docs(self, docs):
         return [
             {

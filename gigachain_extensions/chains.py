@@ -16,7 +16,7 @@ from .prompts import (
 )
 from .utils import setup_gigachat, get_retriever
 from .example_selectors import (
-    ASTE_AO_RetrieverExampleSelector,
+    AO_RetrieverExampleSelector,
     AOP_RetrieverExampleSelector,
 )
 from .pydantic_models import ASTEAnswer
@@ -53,7 +53,7 @@ def get_a_o_chain(examples: List[dict[Literal['text', 'triplets'], str | ASTEAns
     ]
     prompt = get_fewshot_gen_opinion_from_aspect_prompt(examples)
     chain = (
-        {"text": RunnablePassthrough(), "duplets": lambda x: [], "aspects": a_chain}
+        {"text": RunnablePassthrough(), "aspects": a_chain}
         | prompt
         | llm
         | PydanticOutputParser(pydantic_object=ASTEAnswer)
@@ -71,7 +71,7 @@ def get_ao_chain(examples: List[dict[Literal['text'] | Literal['triplets'], str 
     ]
     prompt = get_fewshot_gen_aspect_opinion_prompt(duplet_examples)
     chain = (
-        {"text": RunnablePassthrough(), "duplets": lambda x: []}
+        {"text": RunnablePassthrough()}
         | prompt
         | llm
         | PydanticOutputParser(pydantic_object=ASTEAnswer)
@@ -135,7 +135,7 @@ def get_aop_chain(examples: List[dict[Literal['text'] | Literal['triplets']]]):
         examples=examples
     )
     chain = (
-        {"text": RunnablePassthrough(), "triplets": lambda x: []}
+        {"text": RunnablePassthrough()}
         | prompt
         | llm
         | PydanticOutputParser(pydantic_object=ASTEAnswer)
@@ -143,9 +143,9 @@ def get_aop_chain(examples: List[dict[Literal['text'] | Literal['triplets']]]):
     return chain
 
 
-def get_retrieve_ao_chain(dataset_path: str, n_examples=20, mrr=False):
-    retriever = get_retriever(dataset_path=dataset_path, n_examples=n_examples, mrr=mrr)
-    example_selector = ASTE_AO_RetrieverExampleSelector(retriever)
+def get_retrieve_ao_chain(dataset: Dataset, n_examples=20, mrr=False):
+    retriever = get_retriever(dataset=dataset, n_examples=n_examples, mrr=mrr)
+    example_selector = AO_RetrieverExampleSelector(retriever)
     prompt = get_fewshot_gen_aspect_opinion_prompt(example_selector=example_selector)
     chain = (
         {"text": RunnablePassthrough(), "duplets": lambda x: [] } # duplets are populated by example selector

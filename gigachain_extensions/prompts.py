@@ -93,7 +93,7 @@ def get_fewshot_gen_aspect_opinion_prompt(examples=None, example_selector=None):
         example_prompt=example_prompt,
         examples=examples,
         example_selector=example_selector,
-        input_variables=["text", "duplets"]
+        input_variables=["text"]
     )
     final_prompt = ChatPromptTemplate.from_messages(
         [
@@ -126,7 +126,7 @@ def get_fewshot_gen_opinion_from_aspect_prompt(examples=None, example_selector=N
         example_prompt=example_prompt,
         examples=examples,
         example_selector=example_selector,
-        input_variables=["text", "aspects", "duplets"]
+        input_variables=["text"]
     )
     final_prompt = ChatPromptTemplate.from_messages(
         [
@@ -158,6 +158,7 @@ def get_fewshot_gen_polarity_from_aspects_opinions_prompt(examples):
     few_shot_prompt = FewShotChatMessagePromptTemplate(
         example_prompt=example_prompt,
         examples=examples,
+        input_variables=["text"],
     )
     final_prompt = ChatPromptTemplate.from_messages(
         [
@@ -190,7 +191,7 @@ def get_fewshot_aop_prompt(examples=None, example_selector=None):
         example_prompt=example_prompt,
         examples=examples,
         example_selector=example_selector,
-        input_variables=["text", "triplets"]
+        input_variables=["text"]
     )
     final_prompt = ChatPromptTemplate.from_messages(
         [
