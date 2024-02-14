@@ -36,6 +36,7 @@ class AOP_RetrieverExampleSelector(RetrieverExampleSelector):
         return [
             {
                 "text": doc.page_content, 
+                "duplets": ASTEAnswer(triplets=doc.metadata["triplets"]).model_dump_duplet_json(),
                 "triplets": ASTEAnswer(triplets=doc.metadata["triplets"]).model_dump_json()
             }
             for doc in docs

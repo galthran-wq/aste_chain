@@ -168,3 +168,19 @@ def get_retrieve_aop_chain(dataset: Dataset, n_examples=20, mrr=False):
         | PydanticOutputParser(pydantic_object=ASTEAnswer)
     )
     return chain
+
+
+def get_retrieve_ao_p_chain(dataset: Dataset, n_examples=20, mrr=False):
+    retriever = get_retriever(dataset=dataset, n_examples=n_examples, mrr=mrr)
+    example_selector = AOP_RetrieverExampleSelector(retriever)
+    ao_chain = get_retrieve_ao_chain(dataset, n_examples, mrr)
+    prompt = get_fewshot_gen_polarity_from_aspects_opinions_prompt(
+        example_selector=example_selector
+    )
+    two_staged_chain = (
+        {"text": RunnablePassthrough(), "duplets": ao_chain}
+        | prompt
+        | llm
+        | PydanticOutputParser(pydantic_object=ASTEAnswer)
+    )
+    return two_staged_chain
