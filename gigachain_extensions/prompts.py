@@ -3,21 +3,45 @@ from langchain.prompts import FewShotChatMessagePromptTemplate
 
 AOP_FORMAT_TEMPLATE = """Твой ответ обязательно должен соответствовать формату JSON. Схема ответа:
 {{
-    // Характеристика
-    "aspect_term": string,
-    // Термин мнения
-    "opinion_term": string,
-    // Полярность
-    "sentiment": "POS" или "NEG",
-}}"""
+    "triplets": [
+        {{
+            // Характеристика
+            "aspect_term": string,
+            // Термины мнения
+            "opinion_term": string,
+            // Полярность
+            "sentiment": "POS" или "NEG",
+        }},
+        ...
+    ]
+}}
+"""
 
 AO_FORMAT_TEMPLATE = """Твой ответ обязательно должен соответствовать формату JSON. Схема ответа:
 {{
-    // Характеристика
-    "aspect_term": string,
-    // Термин мнения
-    "opinion_term": string,
-}}"""
+    "duplets": [
+        {{
+            // Характеристика
+            "aspect_term": string,
+            // Термины мнения
+            "opinion_term": string,
+        }},
+        ...
+    ]
+}}
+"""
+
+A_FORMAT_TEMPLATE = """Твой ответ обязательно должен соответствовать формату JSON. Схема ответа:
+{{
+    "aspects": [
+        {{
+            // Характеристика
+            "aspect_term": string,
+        }},
+        ...
+    ]
+}}
+"""
 
 
 def get_fewshot_gen_aspect_prompt(examples):
