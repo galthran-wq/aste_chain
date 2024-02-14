@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 from typing import List, Optional
+import json
 
 import datasets
 from langchain.globals import set_debug
@@ -83,7 +84,7 @@ def main(
     eval_subset = "val",
     debug=False,
     max_workers=2,
-    n_examples=40,
+    n_examples=0,
     mrr: Optional[bool] = None,
     log_file_postfix: str = "",
 ):
@@ -98,6 +99,7 @@ def main(
     if not os.path.exists(results_log_dir):
         os.mkdir(results_log_dir)
     log_file_path = f"{results_log_dir}/{chain_str}-{dataset_path.split('/')[-1].split('.')[0]}-{eval_subset}{'-debug' if debug else ''}-{n_examples}shot-{log_file_postfix}.txt"
+    result_dump_file_path = f"{results_log_dir}/{chain_str}-{dataset_path.split('/')[-1].split('.')[0]}-{eval_subset}{'-debug' if debug else ''}-{n_examples}shot-{log_file_postfix}.json"
 
     # does not print anything
     # logger.add(log_file_path, colorize=True, enqueue=True)
@@ -129,6 +131,8 @@ def main(
             for answer in result
         ]
         result_fixed = fix_preds_format(result)
+        with open(result_dump_file_path, "w") as f:
+            json.dump(result_fixed, f, ensure_ascii=False)
         raw_scores, fixed_scores, _, _, _ =compute_metrics(
             ds[eval_subset]['text'],
             result_fixed, 
