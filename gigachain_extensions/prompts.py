@@ -1,13 +1,24 @@
 from langchain.prompts import ChatPromptTemplate
 from langchain.prompts import FewShotChatMessagePromptTemplate
 
-ASTE_FORMAT_TEMPLATE = """Твой ответ обязательно должен соответствовать формату JSON. Схема ответа:
+AOP_FORMAT_TEMPLATE = """Твой ответ обязательно должен соответствовать формату JSON. Схема ответа:
 {{
     // Характеристика
     "aspect_term": string,
+    // Термин мнения
     "opinion_term": string,
+    // Полярность
     "sentiment": "POS" или "NEG",
 }}"""
+
+AO_FORMAT_TEMPLATE = """Твой ответ обязательно должен соответствовать формату JSON. Схема ответа:
+{{
+    // Характеристика
+    "aspect_term": string,
+    // Термин мнения
+    "opinion_term": string,
+}}"""
+
 
 def get_fewshot_gen_aspect_prompt(examples):
     system_prompt = f"""
@@ -18,7 +29,7 @@ def get_fewshot_gen_aspect_prompt(examples):
 Условия:
 - Термины аспектов и термины мнений должны содержаться в тексте отзыва.
 
-{ASTE_FORMAT_TEMPLATE}
+{AOP_FORMAT_TEMPLATE}
 """
     example_prompt = ChatPromptTemplate.from_messages([
         ("user", "Отзыв:\n{text}"),
@@ -48,7 +59,7 @@ def get_fewshot_gen_aspect_opinion_prompt(examples=None, example_selector=None):
 Условия:
 - Термины аспектов и термины мнений должны содержаться в тексте отзыва.
 
-{ASTE_FORMAT_TEMPLATE}
+{AO_FORMAT_TEMPLATE}
 """
     example_prompt = ChatPromptTemplate.from_messages([
         ("user", "Отзыв:\n{text}"),
@@ -79,12 +90,12 @@ def get_fewshot_gen_polarity_from_aspects_opinions_prompt(examples):
 Полярность (sentiment polarity) -- . Примает одно значение из "POS" или "NEG".
 
 Условия:
-- Термины аспектов и термины мнений должны содержаться в тексте отзыва.
+- В твоем ответе должны содержаться все аспекты, перечисленные в запросе пользователя. Аспекты и термины мнения должны точно совпадать с указанными в примере.
 
-{ASTE_FORMAT_TEMPLATE}
+{AOP_FORMAT_TEMPLATE}
 """
     example_prompt = ChatPromptTemplate.from_messages([
-        ("user", "Отзыв:\n{text}\nСписок терминов аспектов и терминов полярности:\n{duplets}"),
+        ("user", "Отзыв:\n{text}\nСписок терминов аспектов и терминов мнения:\n{duplets}"),
         ("ai", "{triplets}"),
     ])
     few_shot_prompt = FewShotChatMessagePromptTemplate(
@@ -95,7 +106,7 @@ def get_fewshot_gen_polarity_from_aspects_opinions_prompt(examples):
         [
             ("system", system_prompt),
             few_shot_prompt,
-            ("user", "Отзыв:\n{text}\nСписок терминов аспектов и терминов полярности:\n{duplets}")
+            ("user", "Отзыв:\n{text}\nСписок терминов аспектов и терминов мнения:\n{duplets}")
         ]
     )
     return final_prompt
@@ -112,7 +123,7 @@ def get_fewshot_aop_prompt(examples=None, example_selector=None):
 Условия:
 - Термины аспектов и термины мнений должны содержаться в тексте отзыва.
 
-{ASTE_FORMAT_TEMPLATE}
+{AOP_FORMAT_TEMPLATE}
 """
     example_prompt = ChatPromptTemplate.from_messages([
         ("user", "Отзыв:\n{text}\nСписок терминов аспектов, терминов полярности и полярностей из отзыва:"),
