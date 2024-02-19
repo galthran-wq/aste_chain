@@ -17,6 +17,7 @@ from .prompts import (
 )
 from .utils import setup_gigachat, get_retriever
 from .example_selectors import (
+    A_RetrieverExampleSelector,
     AO_RetrieverExampleSelector,
     AOP_RetrieverExampleSelector,
 )
@@ -144,6 +145,33 @@ def get_aop_chain(examples: List[dict[Literal['text'] | Literal['triplets']]]):
     return chain
 
 
+def get_retrieve_a_chain(dataset: Dataset, n_examples=20, mrr=False):
+    retriever = get_retriever(dataset=dataset, n_examples=n_examples, mrr=mrr)
+    example_selector = A_RetrieverExampleSelector(retriever)
+    prompt = get_fewshot_gen_aspect_prompt(example_selector=example_selector)
+    chain = (
+        {"text": RunnablePassthrough()}
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+    return chain
+
+
+def get_retrieve_a_o_chain(dataset: Dataset, n_examples=20, mrr=False):
+    a_chain = get_retrieve_a_chain(dataset, n_examples=n_examples, mrr=mrr)
+    retriever = get_retriever(dataset=dataset, n_examples=n_examples, mrr=mrr)
+    example_selector = AO_RetrieverExampleSelector(retriever)
+    prompt = get_fewshot_gen_opinion_from_aspect_prompt(example_selector=example_selector)
+    chain = (
+        {"text": RunnablePassthrough(), "aspects": a_chain}
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+    return chain
+
+
 def get_retrieve_ao_chain(dataset: Dataset, n_examples=20, mrr=False):
     retriever = get_retriever(dataset=dataset, n_examples=n_examples, mrr=mrr)
     example_selector = AO_RetrieverExampleSelector(retriever)
@@ -184,3 +212,19 @@ def get_retrieve_ao_p_chain(dataset: Dataset, n_examples=20, mrr=False):
         | PydanticOutputParser(pydantic_object=ASTEAnswer)
     )
     return two_staged_chain
+
+
+def get_retrieve_a_o_p_chain(dataset: Dataset, n_examples=20, mrr=False):
+    a_o_chain = get_retrieve_a_o_chain(dataset, n_examples=n_examples, mrr=mrr)
+    retriever = get_retriever(dataset=dataset, n_examples=n_examples, mrr=mrr)
+    example_selector = AOP_RetrieverExampleSelector(retriever)
+    prompt = get_fewshot_gen_polarity_from_aspects_opinions_prompt(
+        example_selector=example_selector
+    )
+    three_staged_chain = (
+        {"text": RunnablePassthrough(), "duplets": a_o_chain}
+        | prompt
+        | llm
+        | PydanticOutputParser(pydantic_object=ASTEAnswer)
+    )
+    return three_staged_chain

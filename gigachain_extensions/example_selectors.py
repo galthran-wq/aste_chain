@@ -20,11 +20,23 @@ class RetrieverExampleSelector(BaseExampleSelector):
         return self.format_docs(best_k_docs)
 
 
+class A_RetrieverExampleSelector(RetrieverExampleSelector):
+    def format_docs(self, docs):
+        return [
+            {
+                "text": doc.page_content, 
+                "aspects": ASTEAnswer(triplets=doc.metadata["triplets"]).model_dump_aspect_json()
+            }
+            for doc in docs
+        ]
+
+
 class AO_RetrieverExampleSelector(RetrieverExampleSelector):
     def format_docs(self, docs):
         return [
             {
                 "text": doc.page_content, 
+                "aspects": ASTEAnswer(triplets=doc.metadata["triplets"]).model_dump_aspect_json(),
                 "duplets": ASTEAnswer(triplets=doc.metadata["triplets"]).model_dump_duplet_json()
             }
             for doc in docs
