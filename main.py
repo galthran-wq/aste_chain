@@ -82,6 +82,7 @@ def main(
     chain_str: str,
     train_subset = "train",
     eval_subset = "val",
+    generate_only_for_col=None,
     debug=False,
     max_workers=2,
     n_examples=0,
@@ -117,9 +118,14 @@ def main(
             "n_examples": n_examples,
         })
         chain = get_chain(chain_str, ds[train_subset], n_examples=n_examples, mrr=mrr)
+        texts = ds[eval_subset]['text']
+        if generate_only_for_col is not None:
+            generate_only_for = ds[eval_subset][generate_only_for_col]
+            texts = [ text for i, text in enumerate(texts) if generate_only_for[i] ]
+            print(f"Will only be generating predictions for {len(texts)} out of {len(generate_only_for)}")
         result: List[ASTEAnswer] = run_chain(
             chain=chain, 
-            texts=ds[eval_subset]['text'], 
+            texts=texts, 
             callbacks=callbacks,
             max_workers=max_workers,
             print_exceptions=True,
@@ -131,6 +137,17 @@ def main(
             for answer in result
         ]
         result_fixed = fix_preds_format(result)
+        if generate_only_for_col is not None:
+            generate_only_for = ds[eval_subset][generate_only_for_col]
+            new_result_fixed = []
+            cnt = 0
+            for i in range(len(generate_only_for)):
+                if generate_only_for[i]:
+                    new_result_fixed.append(result_fixed[cnt])
+                    cnt += 1
+                else:
+                    new_result_fixed.append([])
+            result_fixed = new_result_fixed
         with open(result_dump_file_path, "w") as f:
             json.dump(result_fixed, f, ensure_ascii=False)
         raw_scores, fixed_scores, _, _, _ =compute_metrics(
