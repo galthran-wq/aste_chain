@@ -5,3 +5,8 @@ data*
 .env
 __pycache__
 cache
+mistral-journal-finetune
+mistral-journal-finetune2
+/bert_results
+/answers
+*.ipynb

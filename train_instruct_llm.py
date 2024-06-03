@@ -9,6 +9,8 @@ import transformers
 
 dataset = datasets.load_from_disk("./data/hg/banks_sentenized_w_emp")
 
+# base_model_id = "/external/nfs/lamorozov/.cache/huggingface/hub/models--google--gemma-1.1-7b-it/snapshots/16128b0aeb50762ea96430c0c06a37941bf9f274"
+# base_model_id = "/external/nfs/lamorozov/.cache/huggingface/hub/models--google--gemma-1.1-7b-it/snapshots/16128b0aeb50762ea96430c0c06a37941bf9f274"
 base_model_id = "/external/nfs/lamorozov/.cache/huggingface/hub/models--mistralai--Mistral-7B-Instruct-v0.2/snapshots/b70aa86578567ba3301b21c8a27bea4e8f6d6d61"
 bnb_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -101,7 +103,7 @@ def print_trainable_parameters(model):
 
 
 config = LoraConfig(
-    r=8,
+    r=64,
     lora_alpha=64,
     target_modules=[
         "q_proj",
@@ -126,8 +128,8 @@ if torch.cuda.device_count() > 1: # If more than 1 GPU
     model.is_parallelizable = True
     model.model_parallel = True
 
-project = "instruct-finetune-json-r8"
-base_model_name = "mistral"
+project = "instruct-finetune-json-r64"
+base_model_name = "gemma"
 run_name = base_model_name + "-" + project
 output_dir = "./" + run_name
 
