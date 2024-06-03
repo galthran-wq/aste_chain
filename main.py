@@ -160,5 +160,32 @@ def main(
     write_results_to_log(log_file_path, fixed_scores)
 
 
+def combine_predictions(
+    dataset_path: str,
+    predictions_paths: List[str],
+    eval_subset = "val",
+):
+    results = None
+    for path in predictions_paths:
+        with open(path, "r") as f:
+            predictions = json.load(f)
+            if results is None:
+                results = predictions
+            else:
+                assert len(results) == len(predictions)
+                for result, prediction in zip(results, predictions):
+                    result.extend(prediction)
+    for i in range(len(results)):
+        results[i] = [tuple(tup) for tup in results[i]]
+        results[i] = list(set(results[i]))
+    ds = datasets.load_from_disk(dataset_path)
+    raw_scores, fixed_scores, _, _, _ =compute_metrics(
+        ds[eval_subset]['text'],
+        results, 
+        ds[eval_subset]['triplets']
+    )
+    print(raw_scores, fixed_scores)
+
+
 if __name__ == "__main__":
     fire.Fire(main)
