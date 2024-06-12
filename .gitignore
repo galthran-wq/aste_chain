@@ -1,7 +1,5 @@
 venv
-data*
 !data_utils.py
-*bank*
 .env
 __pycache__
 cache
@@ -10,3 +8,4 @@ mistral-journal-finetune2
 /bert_results
 /answers
 *.ipynb
+/logs
